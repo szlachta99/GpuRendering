@@ -11,6 +11,9 @@ public:
     Camera(float fov, float aspect_ratio, float near, float far);
     void set_position(glm::vec3 position) { m_position = position; };
     void set_rotation(glm::quat rotation) { m_rotation = rotation; };
+    glm::vec3 get_position() { return m_position; };
+    glm::quat get_rotation() { return m_rotation; };
+    void rotate(glm::quat rotation) { m_rotation = rotation * m_rotation; };
     glm::mat4 get_view_mat(); 
     ~Camera();
 private:

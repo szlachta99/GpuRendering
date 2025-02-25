@@ -52,7 +52,7 @@ inline SDL_GPUShader *Shader<stage>::load(SDL_GPUDevice *device)
         SDL_ReleaseGPUShader(m_device, m_shader);
     }
     m_device = device;
-    char* entrypoint;
+    const char* entrypoint;
     switch(format)
     {
         case SDL_GPU_SHADERFORMAT_SPIRV:
@@ -65,7 +65,7 @@ inline SDL_GPUShader *Shader<stage>::load(SDL_GPUDevice *device)
             entrypoint = "main";
             break;
         default:
-            SDL_Log("Unknown shader format: %d", format);
+            SDL_Log("Usupported shader format: %d", format);
             return NULL;
     }
 

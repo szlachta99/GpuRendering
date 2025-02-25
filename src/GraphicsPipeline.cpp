@@ -48,5 +48,25 @@ GraphicsPipeline GraphicsPipelineBuilder::build()
 
 void GraphicsPipeline::bind(SDL_GPURenderPass *render_pass)
 {
+    if(m_pipeline == nullptr)
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Attempted to bind a null graphics pipeline");
+        return;
+    }
     SDL_BindGPUGraphicsPipeline(render_pass, m_pipeline);
+}
+
+void GraphicsPipeline::release()
+{
+    m_pipeline = nullptr;
+    m_device = nullptr;
+    SDL_ReleaseGPUGraphicsPipeline(m_device,m_pipeline);
+}
+
+GraphicsPipeline::~GraphicsPipeline()
+{
+    if(m_pipeline != nullptr)
+    {
+        SDL_ReleaseGPUGraphicsPipeline(m_device, m_pipeline);
+    }
 }

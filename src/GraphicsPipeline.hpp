@@ -27,6 +27,8 @@ class GraphicsPipeline
 public:
     GraphicsPipeline() : m_device(nullptr), m_pipeline(nullptr) {};
     void bind(SDL_GPURenderPass *render_pass);
+    void release();
+    ~GraphicsPipeline();
 private:
     SDL_GPUDevice *m_device;
     SDL_GPUGraphicsPipeline *m_pipeline;

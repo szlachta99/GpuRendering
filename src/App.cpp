@@ -1,5 +1,4 @@
 #include "App.hpp"
-
 #include "Debug.hpp"
 #include "Shader.hpp"
 #include "vendor/glm/glm.hpp"
@@ -16,7 +15,7 @@ App::App()
     setup_debug();
 
     SDL_Init(SDL_INIT_VIDEO);
-    m_window = SDL_CreateWindow("GPU Renderer", 1280, 780, 0);
+    m_window = SDL_CreateWindow("GPU Renderer", 1280, 780, SDL_WINDOW_MOUSE_RELATIVE_MODE);
 
     m_gpu_device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, true, NULL);
 
@@ -49,6 +48,10 @@ App::App()
 
     m_camera.set_position(glm::vec3(0.0f, 0.0f, -2.0f));
     m_camera.set_rotation(glm::quatLookAt(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+
+    m_sensitivity = 0.001f;
+    m_orbit_radius = 2.0f;
+    m_orbit = false;
 
     m_state = State::RUNNING;
 }
@@ -92,6 +95,47 @@ void App::process_event(SDL_Event *event)
     {
         m_state = State::EXIT;
     }
+    if(event->type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+    {
+        if(event->button.button == SDL_BUTTON_RIGHT)
+        {
+            m_orbit = true;
+        }
+    }
+    if(event->type == SDL_EVENT_MOUSE_BUTTON_UP)
+    {
+        if(event->button.button == SDL_BUTTON_RIGHT)
+        {
+            m_orbit = false;
+        }
+    }
+    if(event->type == SDL_EVENT_MOUSE_MOTION)
+    {
+        if(m_orbit)
+        {
+            // Convert current position to spherical coordinates
+            glm::vec3 direction = glm::normalize(m_camera.get_position());
+            float theta = atan2(direction.z, direction.x);
+            float phi = asin(direction.y);
+
+            // Apply motion-based rotation
+            theta -= event->motion.xrel * m_sensitivity;
+            phi -= event->motion.yrel * m_sensitivity;
+            phi = glm::clamp(phi, -glm::half_pi<float>() + 0.1f, glm::half_pi<float>() - 0.1f); // Avoid gimbal lock
+
+            // Convert back to Cartesian coordinates
+            glm::vec3 new_position = {
+                m_orbit_radius * cos(phi) * cos(theta),
+                m_orbit_radius * sin(phi),
+                m_orbit_radius * cos(phi) * sin(theta)
+            };
+
+            // Update camera position and look at origin
+            m_camera.set_position(new_position);
+            m_camera.set_rotation(glm::quatLookAt(glm::normalize(-new_position), glm::vec3(0.0f, 1.0f, 0.0f)));
+        }
+        
+    }
 }
 
 void App::run()
@@ -109,5 +153,8 @@ void App::run()
 
 App::~App()
 {
+    m_graphics_pipeline.release();
+    SDL_DestroyGPUDevice(m_gpu_device);
     SDL_DestroyWindow(m_window);
+    SDL_Quit();
 }

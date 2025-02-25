@@ -27,4 +27,7 @@ private:
     SDL_GPUDevice *m_gpu_device;
     GraphicsPipeline m_graphics_pipeline;
     Camera m_camera;
+    float m_sensitivity;
+    float m_orbit_radius;
+    bool m_orbit;
 };
