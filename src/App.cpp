@@ -2,6 +2,14 @@
 
 #include "Debug.hpp"
 #include "Shader.hpp"
+#include "vendor/glm/glm.hpp"
+#include "vendor/glm/gtc/matrix_transform.hpp"
+#include "vendor/glm/gtc/quaternion.hpp"
+
+struct UBO {
+    glm::mat4 mvp;
+};
+
 
 App::App()
 {
@@ -21,8 +29,8 @@ App::App()
 
     SDL_ClaimWindowForGPUDevice(m_gpu_device, m_window);
 
-    auto vert_shader = Shader<SDL_GPU_SHADERSTAGE_VERTEX>("shaders/bin/shader.spv.vert", 0, 0, 0, 0);
-    auto frag_shader = Shader<SDL_GPU_SHADERSTAGE_FRAGMENT>("shaders/bin/shader.spv.frag", 0, 0, 0, 0);
+    auto vert_shader = VertexShader("shaders/bin/shader.spv.vert", 0, 1, 0, 0);
+    auto frag_shader = FragmentShader("shaders/bin/shader.spv.frag", 0, 0, 0, 0);
 
     GraphicsPipelineBuilder builder(m_gpu_device);
     builder.setVertexShader(vert_shader)
@@ -34,6 +42,14 @@ App::App()
 
     m_graphics_pipeline = builder.build();
 
+    int window_width, window_height;
+    SDL_GetWindowSize(m_window, &window_width, &window_height);
+
+    m_camera = Camera(45.0f, (float)window_width / (float)window_height, 0.1f, 10.0f);
+
+    m_camera.set_position(glm::vec3(0.0f, 0.0f, -2.0f));
+    m_camera.set_rotation(glm::quatLookAt(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+
     m_state = State::RUNNING;
 }
 
@@ -43,20 +59,29 @@ void App::iter()
 
     SDL_GPUTexture *swap_tex;
     SDL_AcquireGPUSwapchainTexture(cmd_buffer, m_window, &swap_tex, NULL, NULL);
-    
-    SDL_GPUColorTargetInfo color_target = {
-        .texture = swap_tex,
-        .clear_color = {0.0f, 0.2f, 0.4f, 1.0f},
-        .load_op = SDL_GPU_LOADOP_CLEAR,
-        .store_op = SDL_GPU_STOREOP_STORE
-    };
+    if(swap_tex != nullptr){
+        SDL_GPUColorTargetInfo color_target = {
+            .texture = swap_tex,
+            .clear_color = {0.0f, 0.2f, 0.4f, 1.0f},
+            .load_op = SDL_GPU_LOADOP_CLEAR,
+            .store_op = SDL_GPU_STOREOP_STORE
+        };
+        auto render_pass = SDL_BeginGPURenderPass(cmd_buffer, &color_target, 1, nullptr);
+        
+        glm::vec3 model_pos = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::mat4 model = glm::translate(glm::mat4(1.0f), model_pos) * glm::rotate(glm::mat4(1.0f), (float)SDL_GetTicks() / 500.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+        UBO uniform = {
+            .mvp = m_camera.get_view_mat() * model
+        };
+        
+        m_graphics_pipeline.bind(render_pass);
+        SDL_PushGPUVertexUniformData(cmd_buffer, 0, &uniform, sizeof(UBO));
 
-    auto render_pass = SDL_BeginGPURenderPass(cmd_buffer, &color_target, 1, nullptr);
+        SDL_DrawGPUPrimitives(render_pass, 3, 1, 0, 0);
     
-    m_graphics_pipeline.bind(render_pass);
-    SDL_DrawGPUPrimitives(render_pass, 3, 1, 0, 0);
+        SDL_EndGPURenderPass(render_pass);
 
-    SDL_EndGPURenderPass(render_pass);
+    }
 
     SDL_SubmitGPUCommandBuffer(cmd_buffer);
 }

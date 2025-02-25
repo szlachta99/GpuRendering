@@ -10,8 +10,8 @@ class GraphicsPipelineBuilder
 {
 public:
     GraphicsPipelineBuilder(SDL_GPUDevice *device) : m_device(device) {SDL_zero(m_info);};
-    GraphicsPipelineBuilder& setVertexShader(Shader<SDL_GPU_SHADERSTAGE_VERTEX> &shader);
-    GraphicsPipelineBuilder& setFragmentShader(Shader<SDL_GPU_SHADERSTAGE_FRAGMENT> &shader);
+    GraphicsPipelineBuilder& setVertexShader(VertexShader&shader);
+    GraphicsPipelineBuilder& setFragmentShader(FragmentShader &shader);
     GraphicsPipelineBuilder& setPrimitiveType(SDL_GPUPrimitiveType type);
     GraphicsPipelineBuilder& addColorTargetDescription(SDL_GPUColorTargetDescription &&desc);
     GraphicsPipelineBuilder& clearColorTargetDescriptions();

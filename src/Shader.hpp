@@ -102,3 +102,7 @@ inline SDL_GPUShader *Shader<stage>::load(SDL_GPUDevice *device)
     
     return shader;
 }
+
+
+typedef Shader<SDL_GPU_SHADERSTAGE_VERTEX> VertexShader;
+typedef Shader<SDL_GPU_SHADERSTAGE_FRAGMENT> FragmentShader;

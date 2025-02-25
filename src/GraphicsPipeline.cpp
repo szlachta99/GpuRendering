@@ -1,12 +1,12 @@
 #include "GraphicsPipeline.hpp"
 
-GraphicsPipelineBuilder& GraphicsPipelineBuilder::setVertexShader(Shader<SDL_GPU_SHADERSTAGE_VERTEX> &shader)
+GraphicsPipelineBuilder& GraphicsPipelineBuilder::setVertexShader(VertexShader &shader)
 {
     m_info.vertex_shader = shader.load(m_device);
     return *this;
 }
 
-GraphicsPipelineBuilder& GraphicsPipelineBuilder::setFragmentShader(Shader<SDL_GPU_SHADERSTAGE_FRAGMENT> &shader)
+GraphicsPipelineBuilder& GraphicsPipelineBuilder::setFragmentShader(FragmentShader &shader)
 {
     m_info.fragment_shader = shader.load(m_device);
     return *this;

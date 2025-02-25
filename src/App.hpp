@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL3/SDL.h>
 #include "GraphicsPipeline.hpp"
+#include "Camera.hpp"
 
 class App
 {
@@ -25,4 +26,5 @@ private:
     SDL_Window *m_window;
     SDL_GPUDevice *m_gpu_device;
     GraphicsPipeline m_graphics_pipeline;
+    Camera m_camera;
 };
